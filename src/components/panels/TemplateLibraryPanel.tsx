@@ -13,7 +13,7 @@ const categoryLabels = {
   single: '单码',
 } as const;
 
-export const TemplateLibraryPanel = () => {
+export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) => {
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState<keyof typeof categoryLabels>('all');
   const templates = useEditorStore((state) => state.templates);
@@ -40,14 +40,14 @@ export const TemplateLibraryPanel = () => {
   const activeTemplate = filtered.find((item) => item.id === activeTemplateId) ?? filtered[0];
 
   return (
-    <Panel title="1. 先选模板" className="max-h-[calc(100vh-170px)] overflow-hidden">
+    <Panel title="1. 先选模板" className={mobile ? '' : 'max-h-[calc(100vh-170px)] overflow-hidden'}>
       <div className="grid h-full gap-4">
         <div className="rounded-[28px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fb,#eef7ff)] p-4">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
             <Sparkles className="h-4 w-4 text-rose-500" />
             先看整张模板，再决定套用
           </div>
-          <p className="text-sm leading-6 text-slate-600">左侧先看大缩略预览，下面再选模板。默认优先展示横版双码卡。</p>
+          <p className="text-sm leading-6 text-slate-600">默认优先展示横版双码卡。手机上可以直接看大缩略图，不用切来切去。</p>
           <div className="mt-4 flex gap-2">
             <button
               type="button"
@@ -75,7 +75,7 @@ export const TemplateLibraryPanel = () => {
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">当前大预览</span>
             </div>
-            <TemplatePreviewCard template={activeTemplate} className="aspect-[1.55/1] min-h-[220px]" />
+            <TemplatePreviewCard template={activeTemplate} className="aspect-[1.55/1] min-h-[220px] sm:min-h-[240px]" />
             <button
               type="button"
               className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm text-white transition hover:bg-slate-800"
@@ -106,14 +106,14 @@ export const TemplateLibraryPanel = () => {
           ))}
         </div>
 
-        <div className="grid gap-4 overflow-y-auto pr-1">
+        <div className={`grid gap-4 pr-1 ${mobile ? '' : 'overflow-y-auto'}`}>
           {filtered.map((template) => (
             <article
               key={template.id}
               className={`rounded-[30px] border bg-white/90 p-3 transition ${activeTemplateId === template.id ? 'border-slate-900 shadow-soft' : 'border-slate-200'}`}
             >
               <button type="button" className="block w-full text-left" onClick={() => applyTemplate(template.id)}>
-                <TemplatePreviewCard template={template} className="aspect-[1.55/1] min-h-[210px]" />
+                <TemplatePreviewCard template={template} className="aspect-[1.55/1] min-h-[190px] sm:min-h-[210px]" />
               </button>
 
               <div className="mt-3 flex items-start justify-between gap-3">
@@ -122,7 +122,7 @@ export const TemplateLibraryPanel = () => {
                   <p className="mt-1 text-xs text-slate-500">
                     {template.scene} / {template.mode === 'double' ? '双码横版卡' : '单码卡'}
                   </p>
-                  <p className="mt-1 text-xs text-slate-400">{template.tags.join(' · ')}</p>
+                  <p className="mt-1 text-xs text-slate-400">{template.tags.join(' / ')}</p>
                 </div>
                 <button type="button" className="text-slate-400" onClick={() => toggleFavorite(template.id)}>
                   <Heart className={`h-4 w-4 ${template.favorite ? 'fill-rose-500 text-rose-500' : ''}`} />

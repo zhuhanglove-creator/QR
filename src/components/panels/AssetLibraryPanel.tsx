@@ -5,7 +5,7 @@ import { useEditorStore } from '../../store/editorStore';
 import { readFileAsDataUrl } from '../../utils/image';
 import { Panel } from '../common/Panel';
 
-export const AssetLibraryPanel = () => {
+export const AssetLibraryPanel = ({ mobile = false }: { mobile?: boolean }) => {
   const assets = useEditorStore((state) => state.assets);
   const addImageAsset = useEditorStore((state) => state.addImageAsset);
   const attachBackgroundAsset = useEditorStore((state) => state.attachBackgroundAsset);
@@ -79,11 +79,11 @@ export const AssetLibraryPanel = () => {
   });
 
   return (
-    <Panel title="2. 上传图片" className="max-h-[calc(100vh-170px)] overflow-y-auto">
+    <Panel title="2. 上传图片" className={mobile ? '' : 'max-h-[calc(100vh-170px)] overflow-y-auto'}>
       <div className="grid gap-4">
         <div className="rounded-[28px] border border-sky-100 bg-[linear-gradient(135deg,#f7fbff,#fff7fb)] p-4">
-          <div className="text-sm font-semibold text-slate-800">上传区已经单独放到一个面板</div>
-          <p className="mt-2 text-sm leading-6 text-slate-600">不用再从模板库一路往下滑。切到“上传图片”就能直接上传二维码、卡片背景、场景背景和角色图。</p>
+          <div className="text-sm font-semibold text-slate-800">上传区已经独立出来</div>
+          <p className="mt-2 text-sm leading-6 text-slate-600">切到这里就能直接上传二维码、卡片背景、场景背景和角色图，手机上不用再一直往下滑。</p>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
@@ -107,21 +107,21 @@ export const AssetLibraryPanel = () => {
             <input {...backgroundDropzone.getInputProps()} />
             <Wallpaper className="mb-2 h-5 w-5" />
             <div className="font-semibold">卡片内部背景</div>
-            <p className="mt-1 text-xs leading-5 text-rose-700">改的是卡片本体里面的底图、底纹和氛围层，不是外面的场景背景。</p>
+            <p className="mt-1 text-xs leading-5 text-rose-700">这里改的是卡片本体内部的底图、底纹和氛围层。</p>
           </div>
 
           <div {...mockupDropzone.getRootProps()} className="rounded-[24px] border border-dashed border-violet-200 bg-violet-50/80 p-4 text-sm text-violet-900">
             <input {...mockupDropzone.getInputProps()} />
             <ImagePlus className="mb-2 h-5 w-5" />
             <div className="font-semibold">外部场景背景</div>
-            <p className="mt-1 text-xs leading-5 text-violet-700">改的是卡片外侧的 mockup 场景，比如桌面、布料、拍摄背景。</p>
+            <p className="mt-1 text-xs leading-5 text-violet-700">这里改的是卡片外部的 mockup 场景，比如桌面、布料、拍摄背景。</p>
           </div>
 
           <div {...characterDropzone.getRootProps()} className="rounded-[24px] border border-dashed border-amber-200 bg-amber-50/80 p-4 text-sm text-amber-900">
             <input {...characterDropzone.getInputProps()} />
             <UserRound className="mb-2 h-5 w-5" />
             <div className="font-semibold">替换角色插画</div>
-            <p className="mt-1 text-xs leading-5 text-amber-700">把模板里的原创占位角色换成你自己的插画或人物图。</p>
+            <p className="mt-1 text-xs leading-5 text-amber-700">把模板里的角色占位图换成你自己的插画或人物图。</p>
           </div>
         </div>
 

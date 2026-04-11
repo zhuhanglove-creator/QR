@@ -103,9 +103,10 @@ const StickerNode = ({ element, scale }: { element: DecorationElement; scale: nu
 
 interface CanvasWorkspaceProps {
   stageRef: React.RefObject<Konva.Stage | null>;
+  compact?: boolean;
 }
 
-export const CanvasWorkspace = ({ stageRef }: CanvasWorkspaceProps) => {
+export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspaceProps) => {
   const canvas = useEditorStore((state) => state.canvas);
   const mockup = useEditorStore((state) => state.mockup);
   const previewMode = useEditorStore((state) => state.previewMode);
@@ -162,7 +163,7 @@ export const CanvasWorkspace = ({ stageRef }: CanvasWorkspaceProps) => {
       : 'linear-gradient(135deg, #fff8fb, #eef5ff 55%, #f9f2ff)';
 
   const availableWidth = Math.max(viewportSize.width - 24, 320);
-  const availableHeight = Math.max(viewportSize.height - 24, 320);
+  const availableHeight = Math.max(viewportSize.height - 24, compact ? 280 : 320);
   const stageScale = viewportSize.width === 0 || viewportSize.height === 0 ? 1 : Math.min(availableWidth / canvas.sceneWidth, availableHeight / canvas.sceneHeight, 1);
   const scaledWidth = canvas.sceneWidth * stageScale;
   const scaledHeight = canvas.sceneHeight * stageScale;
@@ -172,15 +173,19 @@ export const CanvasWorkspace = ({ stageRef }: CanvasWorkspaceProps) => {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">实时卡片预览</h2>
-          <p className="text-sm text-slate-500">画布会自动缩放到当前区域，尽量让你不需要手动拖动画面。</p>
+          <p className="text-sm text-slate-500">画布会自动缩放到当前区域，手机上尽量直接看到完整卡片。</p>
         </div>
         <div className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
-          卡片 {canvas.width} × {canvas.height} / 场景 {canvas.sceneWidth} × {canvas.sceneHeight}
+          卡片 {canvas.width} x {canvas.height} / 场景 {canvas.sceneWidth} x {canvas.sceneHeight}
         </div>
       </div>
 
-      <div ref={viewportRef} className="rounded-[30px] p-4" style={{ background: sceneWrapperStyle, minHeight: 'calc(100vh - 240px)' }}>
-        <div className="flex h-full min-h-[520px] items-center justify-center overflow-hidden">
+      <div
+        ref={viewportRef}
+        className="rounded-[30px] p-3 sm:p-4"
+        style={{ background: sceneWrapperStyle, minHeight: compact ? '340px' : 'calc(100vh - 240px)' }}
+      >
+        <div className={`flex h-full items-center justify-center overflow-hidden ${compact ? 'min-h-[300px]' : 'min-h-[520px]'}`}>
           <div style={{ width: scaledWidth, height: scaledHeight }}>
             <Stage
               ref={stageRef}
