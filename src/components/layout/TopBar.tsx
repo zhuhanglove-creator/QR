@@ -70,6 +70,7 @@ export const TopBar = ({ stageRef }: TopBarProps) => {
         ),
         fileName: `${exportConfig.fileName}-card`,
         preferShareOnMobile: true,
+        backgroundColor: '#ffffff',
       });
     } finally {
       if (previousMode !== 'card') {
@@ -93,6 +94,7 @@ export const TopBar = ({ stageRef }: TopBarProps) => {
       await exportStageAsPng(stageRef.current, exportConfig, {
         fileName: `${exportConfig.fileName}-mockup`,
         preferShareOnMobile: true,
+        backgroundColor: '#ffffff',
       });
     } finally {
       if (previousMode !== 'mockup') {

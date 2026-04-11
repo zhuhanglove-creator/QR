@@ -14,6 +14,37 @@ const dataUrlToBlob = async (dataUrl: string) => {
   return response.blob();
 };
 
+const dataUrlToImage = (dataUrl: string) =>
+  new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Failed to load export image'));
+    image.src = dataUrl;
+  });
+
+const renderExportSurface = async (
+  dataUrl: string,
+  width: number,
+  height: number,
+  backgroundColor: string,
+) => {
+  const image = await dataUrlToImage(dataUrl);
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+
+  if (!context) {
+    throw new Error('Failed to create export canvas');
+  }
+
+  context.fillStyle = backgroundColor;
+  context.fillRect(0, 0, width, height);
+  context.drawImage(image, 0, 0, width, height);
+
+  return canvas.toDataURL('image/png');
+};
+
 const downloadBlob = (blob: Blob, fileName: string) => {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -65,14 +96,19 @@ export const exportStageAsPng = async (
     cropRect?: Rect;
     fileName?: string;
     preferShareOnMobile?: boolean;
+    backgroundColor?: string;
   },
 ) => {
   const fileName = `${options?.fileName ?? exportConfig.fileName ?? 'qr-export'}.png`;
-  const dataUrl = stage.toDataURL({
+  const cropRect = options?.cropRect;
+  const width = Math.round((cropRect?.width ?? stage.width()) * exportConfig.scale);
+  const height = Math.round((cropRect?.height ?? stage.height()) * exportConfig.scale);
+  const rawDataUrl = stage.toDataURL({
     pixelRatio: exportConfig.scale,
     mimeType: 'image/png',
-    ...(options?.cropRect ?? {}),
+    ...(cropRect ?? {}),
   });
+  const dataUrl = await renderExportSurface(rawDataUrl, width, height, options?.backgroundColor ?? '#ffffff');
 
   const blob = await dataUrlToBlob(dataUrl);
 
