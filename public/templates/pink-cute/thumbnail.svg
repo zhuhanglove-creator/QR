@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="420" viewBox="0 0 600 420">
+  <rect width="600" height="420" fill="#ffe4ef"/>
+  <rect x="100" y="30" width="400" height="360" rx="36" fill="#fff7fb" stroke="#ffc4dc" stroke-width="3"/>
+  <text x="300" y="88" text-anchor="middle" font-size="32" font-family="Arial" fill="#be185d">粉色可爱</text>
+  <rect x="198" y="126" width="204" height="204" rx="30" fill="#fff7fb" stroke="#ec4899" stroke-width="12"/>
+  <circle cx="240" cy="168" r="20" fill="#ec4899"/>
+  <circle cx="360" cy="168" r="20" fill="#ec4899"/>
+  <circle cx="240" cy="288" r="20" fill="#ec4899"/>
+  <circle cx="320" cy="240" r="32" fill="#ec4899"/>
+</svg>

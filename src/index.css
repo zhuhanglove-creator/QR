@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Long+Cang&family=M+PLUS+Rounded+1c:wght@400;500;700;800&family=Ma+Shan+Zheng&family=Mochiy+Pop+One&family=Noto+Sans+SC:wght@400;500;700;800&family=Noto+Serif+SC:wght@400;500;700;800&family=ZCOOL+KuaiLe&family=ZCOOL+XiaoWei&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color: #0f172a;
+  background: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 42%, #eef2ff 100%);
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
