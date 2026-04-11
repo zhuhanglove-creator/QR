@@ -162,30 +162,32 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
       ? sceneBackground(mockup.scene, mockup.sceneColors)
       : 'linear-gradient(135deg, #fff8fb, #eef5ff 55%, #f9f2ff)';
 
-  const availableWidth = Math.max(viewportSize.width - 24, 320);
-  const availableHeight = Math.max(viewportSize.height - 24, compact ? 280 : 320);
+  const compactViewportHeight = 'calc(100dvh - 248px)';
+  const availableWidth = Math.max(viewportSize.width - 20, 280);
+  const availableHeight = Math.max(viewportSize.height - 20, compact ? 220 : 320);
   const stageScale = viewportSize.width === 0 || viewportSize.height === 0 ? 1 : Math.min(availableWidth / canvas.sceneWidth, availableHeight / canvas.sceneHeight, 1);
   const scaledWidth = canvas.sceneWidth * stageScale;
   const scaledHeight = canvas.sceneHeight * stageScale;
 
   return (
-    <div className="rounded-[36px] border border-white/60 bg-white/70 p-4 shadow-soft backdrop-blur">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="rounded-[32px] border border-white/60 bg-white/70 p-3 shadow-soft backdrop-blur sm:rounded-[36px] sm:p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3 sm:mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">实时卡片预览</h2>
-          <p className="text-sm text-slate-500">画布会自动缩放到当前区域，手机上尽量直接看到完整卡片。</p>
+          <h2 className="text-base font-semibold text-slate-900 sm:text-lg">实时卡片预览</h2>
+          <p className="hidden text-sm text-slate-500 sm:block">画布会自动缩放到当前区域，手机上尽量直接看到完整卡片。</p>
         </div>
-        <div className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
-          卡片 {canvas.width} x {canvas.height} / 场景 {canvas.sceneWidth} x {canvas.sceneHeight}
-        </div>
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">卡片 {canvas.width} x {canvas.height}</div>
       </div>
 
       <div
         ref={viewportRef}
-        className="rounded-[30px] p-3 sm:p-4"
-        style={{ background: sceneWrapperStyle, minHeight: compact ? '340px' : 'calc(100vh - 240px)' }}
+        className="overflow-hidden rounded-[28px] p-2 sm:rounded-[30px] sm:p-4"
+        style={{ background: sceneWrapperStyle, minHeight: compact ? compactViewportHeight : 'calc(100vh - 240px)' }}
       >
-        <div className={`flex h-full items-center justify-center overflow-hidden ${compact ? 'min-h-[300px]' : 'min-h-[520px]'}`}>
+        <div
+          className={`flex h-full items-center justify-center overflow-hidden ${compact ? 'min-h-[220px]' : 'min-h-[520px]'}`}
+          style={compact ? { minHeight: 'calc(100dvh - 316px)' } : undefined}
+        >
           <div style={{ width: scaledWidth, height: scaledHeight }}>
             <Stage
               ref={stageRef}
@@ -193,9 +195,9 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
               height={canvas.sceneHeight}
               scaleX={stageScale}
               scaleY={stageScale}
-              className="rounded-[32px]"
+              className="rounded-[28px] sm:rounded-[32px]"
             >
-              <Layer>
+              <Layer id="scene-layer">
                 <Rect width={canvas.sceneWidth} height={canvas.sceneHeight} fill="rgba(255,255,255,0)" />
 
                 {previewMode === 'mockup' && (
@@ -213,7 +215,7 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
                   </>
                 )}
 
-                <Group x={canvas.cardX} y={canvas.cardY} rotation={previewMode === 'mockup' ? mockup.rotation : 0}>
+                <Group id="card-root" x={canvas.cardX} y={canvas.cardY} rotation={previewMode === 'mockup' ? mockup.rotation : 0}>
                   <Rect
                     width={canvas.width}
                     height={canvas.height}

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'qr-template-studio-state-v4';
+const STORAGE_KEY = 'qr-template-studio-state-v5';
 
 const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
 

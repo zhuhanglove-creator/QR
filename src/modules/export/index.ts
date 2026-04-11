@@ -1,5 +1,5 @@
-import type Konva from 'konva';
-import type { ExportConfig, Rect } from '../../types';
+import Konva from 'konva';
+import type { ExportConfig } from '../../types';
 
 const isMobileDevice = () => {
   if (typeof navigator === 'undefined') {
@@ -7,6 +7,67 @@ const isMobileDevice = () => {
   }
 
   return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+};
+
+const nextFrame = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+
+const waitForFontsReady = async () => {
+  if (typeof document === 'undefined' || !('fonts' in document)) {
+    return;
+  }
+
+  try {
+    await document.fonts.ready;
+  } catch (error) {
+    console.error('Failed while waiting for fonts', error);
+  }
+};
+
+const waitForImageReady = (image: CanvasImageSource | null | undefined) =>
+  new Promise<void>((resolve) => {
+    if (!image || !(image instanceof HTMLImageElement)) {
+      resolve();
+      return;
+    }
+
+    if (image.complete && image.naturalWidth > 0) {
+      resolve();
+      return;
+    }
+
+    const finish = () => {
+      image.removeEventListener('load', finish);
+      image.removeEventListener('error', finish);
+      resolve();
+    };
+
+    image.addEventListener('load', finish, { once: true });
+    image.addEventListener('error', finish, { once: true });
+  });
+
+const waitForStageAssets = async (stage: Konva.Stage) => {
+  await waitForFontsReady();
+
+  const imageNodes = stage.find('Image') as Konva.Image[];
+  await Promise.all(imageNodes.map((node) => waitForImageReady(node.image())));
+  await nextFrame();
+  stage.draw();
+};
+
+const createOffscreenContainer = () => {
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.left = '-100000px';
+  container.style.top = '0';
+  container.style.width = '1px';
+  container.style.height = '1px';
+  container.style.pointerEvents = 'none';
+  container.style.opacity = '0';
+  document.body.appendChild(container);
+  return container;
 };
 
 const dataUrlToBlob = async (dataUrl: string) => {
@@ -22,27 +83,11 @@ const dataUrlToImage = (dataUrl: string) =>
     image.src = dataUrl;
   });
 
-const renderExportSurface = async (
-  dataUrl: string,
-  width: number,
-  height: number,
-  backgroundColor: string,
-) => {
+const validateExportDimensions = async (dataUrl: string, expectedWidth: number, expectedHeight: number) => {
   const image = await dataUrlToImage(dataUrl);
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const context = canvas.getContext('2d');
-
-  if (!context) {
-    throw new Error('Failed to create export canvas');
+  if (image.width !== expectedWidth || image.height !== expectedHeight) {
+    throw new Error(`Export size mismatch: expected ${expectedWidth}x${expectedHeight}, got ${image.width}x${image.height}`);
   }
-
-  context.fillStyle = backgroundColor;
-  context.fillRect(0, 0, width, height);
-  context.drawImage(image, 0, 0, width, height);
-
-  return canvas.toDataURL('image/png');
 };
 
 const downloadBlob = (blob: Blob, fileName: string) => {
@@ -75,57 +120,92 @@ const shareBlob = async (blob: Blob, fileName: string) => {
   return false;
 };
 
-export const expandCropRect = (rect: Rect, padding: number, stageWidth: number, stageHeight: number): Rect => {
-  const x = Math.max(0, rect.x - padding);
-  const y = Math.max(0, rect.y - padding);
-  const maxWidth = stageWidth - x;
-  const maxHeight = stageHeight - y;
-
-  return {
-    x,
-    y,
-    width: Math.min(rect.width + padding * 2, maxWidth),
-    height: Math.min(rect.height + padding * 2, maxHeight),
-  };
-};
+interface ExportFromNodeOptions {
+  sourceNode: Konva.Node;
+  width: number;
+  height: number;
+  fileName?: string;
+  preferShareOnMobile?: boolean;
+  backgroundColor?: string;
+  resetPosition?: boolean;
+  resetRotation?: boolean;
+}
 
 export const exportStageAsPng = async (
   stage: Konva.Stage,
   exportConfig: ExportConfig,
-  options?: {
-    cropRect?: Rect;
-    fileName?: string;
-    preferShareOnMobile?: boolean;
-    backgroundColor?: string;
-  },
+  options: ExportFromNodeOptions,
 ) => {
-  const fileName = `${options?.fileName ?? exportConfig.fileName ?? 'qr-export'}.png`;
-  const cropRect = options?.cropRect;
-  const width = Math.round((cropRect?.width ?? stage.width()) * exportConfig.scale);
-  const height = Math.round((cropRect?.height ?? stage.height()) * exportConfig.scale);
-  const rawDataUrl = stage.toDataURL({
-    pixelRatio: exportConfig.scale,
-    mimeType: 'image/png',
-    ...(cropRect ?? {}),
+  await waitForStageAssets(stage);
+
+  const container = createOffscreenContainer();
+  const exportStage = new Konva.Stage({
+    container,
+    width: options.width,
+    height: options.height,
   });
-  const dataUrl = await renderExportSurface(rawDataUrl, width, height, options?.backgroundColor ?? '#ffffff');
 
-  const blob = await dataUrlToBlob(dataUrl);
+  try {
+    const layer = new Konva.Layer();
+    exportStage.add(layer);
 
-  if (options?.preferShareOnMobile !== false && isMobileDevice()) {
-    try {
-      const shared = await shareBlob(blob, fileName.replace(/\.png$/i, ''));
-      if (shared) {
-        return;
-      }
-    } catch (error) {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) {
-        console.error('Failed to share export', error);
-      } else {
-        return;
+    if (options.backgroundColor) {
+      layer.add(
+        new Konva.Rect({
+          x: 0,
+          y: 0,
+          width: options.width,
+          height: options.height,
+          fill: options.backgroundColor,
+        }),
+      );
+    }
+
+    const clone = options.sourceNode.clone({
+      x: options.resetPosition === false ? options.sourceNode.x() : 0,
+      y: options.resetPosition === false ? options.sourceNode.y() : 0,
+      scaleX: 1,
+      scaleY: 1,
+      rotation: options.resetRotation === false ? options.sourceNode.rotation() : 0,
+    });
+
+    layer.add(clone);
+    await waitForStageAssets(exportStage);
+
+    const dataUrl = exportStage.toDataURL({
+      pixelRatio: exportConfig.scale,
+      mimeType: 'image/png',
+      x: 0,
+      y: 0,
+      width: options.width,
+      height: options.height,
+    });
+
+    const expectedWidth = Math.round(options.width * exportConfig.scale);
+    const expectedHeight = Math.round(options.height * exportConfig.scale);
+    await validateExportDimensions(dataUrl, expectedWidth, expectedHeight);
+
+    const blob = await dataUrlToBlob(dataUrl);
+    const fileName = `${options.fileName ?? exportConfig.fileName ?? 'qr-export'}.png`;
+
+    if (options.preferShareOnMobile !== false && isMobileDevice()) {
+      try {
+        const shared = await shareBlob(blob, fileName.replace(/\.png$/i, ''));
+        if (shared) {
+          return;
+        }
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === 'AbortError')) {
+          console.error('Failed to share export', error);
+        } else {
+          return;
+        }
       }
     }
-  }
 
-  downloadBlob(blob, fileName);
+    downloadBlob(blob, fileName);
+  } finally {
+    exportStage.destroy();
+    container.remove();
+  }
 };

@@ -26,10 +26,11 @@ export const TemplatePreviewCard = ({ template, className }: TemplatePreviewCard
   const qrA = template.qrElements[0];
   const qrB = template.qrElements[1];
   const hasCharacter = Boolean(template.character);
+  const aspectClass = template.orientation === 'portrait' ? 'aspect-[4/5]' : 'aspect-[1.55/1]';
 
   return (
     <div
-      className={clsx('relative overflow-hidden rounded-[28px] border border-white/70 shadow-[0_18px_44px_rgba(143,120,171,0.18)]', className)}
+      className={clsx('relative overflow-hidden rounded-[28px] border border-white/70 shadow-[0_18px_44px_rgba(143,120,171,0.18)]', className, aspectClass)}
       style={{
         background: `linear-gradient(135deg, ${template.palette.surface}, ${template.palette.surfaceAlt})`,
       }}
@@ -60,15 +61,15 @@ export const TemplatePreviewCard = ({ template, className }: TemplatePreviewCard
       {template.layout === 'left-character-right-double' && hasCharacter && (
         <>
           <div
-            className="absolute bottom-4 left-4 rounded-[28px] border border-white/70"
+            className="absolute left-1/2 top-[27%] -translate-x-1/2 rounded-[28px] border border-white/70"
             style={{
-              width: '28%',
-              height: '62%',
+              width: '32%',
+              height: '24%',
               background: `linear-gradient(180deg, ${template.palette.accentSoft}, ${template.palette.surface})`,
               boxShadow: `0 14px 30px ${template.palette.line}33`,
             }}
           />
-          <div className="absolute bottom-8 left-[34%] flex gap-3">
+          <div className="absolute left-1/2 top-[58%] flex -translate-x-1/2 -translate-y-1/2 gap-3">
             {qrA && <QrMini accent={qrA.accentColor} label={qrA.platformName} tilt={-4} />}
             {qrB && <QrMini accent={qrB.accentColor} label={qrB.platformName} tilt={4} />}
           </div>
@@ -77,32 +78,32 @@ export const TemplatePreviewCard = ({ template, className }: TemplatePreviewCard
 
       {template.layout === 'classic-double' && (
         <>
-          <div className="absolute bottom-6 left-1/2 flex -translate-x-1/2 gap-5">
+          <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 -translate-y-1/2 gap-5">
             {qrA && <QrMini accent={qrA.accentColor} label={qrA.platformName} tilt={-2} />}
             {qrB && <QrMini accent={qrB.accentColor} label={qrB.platformName} tilt={2} />}
           </div>
-          <div className="absolute bottom-8 left-5 h-14 w-14 rounded-full border border-white/80" style={{ background: `linear-gradient(135deg, ${template.palette.accentSoft}, #ffffff)` }} />
-          <div className="absolute right-5 top-[40%] h-12 w-12 rounded-full border border-white/80" style={{ background: `linear-gradient(135deg, ${template.palette.surfaceAlt}, #ffffff)` }} />
+          <div className="absolute bottom-10 left-5 h-12 w-12 rounded-full border border-white/80" style={{ background: `linear-gradient(135deg, ${template.palette.accentSoft}, #ffffff)` }} />
+          <div className="absolute right-5 top-[34%] h-10 w-10 rounded-full border border-white/80" style={{ background: `linear-gradient(135deg, ${template.palette.surfaceAlt}, #ffffff)` }} />
         </>
       )}
 
       {template.layout === 'center-double' && (
         <>
-          <div className="absolute left-1/2 top-[54%] flex -translate-x-1/2 -translate-y-1/2 gap-4">
+          <div className="absolute left-1/2 top-[56%] flex -translate-x-1/2 -translate-y-1/2 gap-4">
             {qrA && <QrMini accent={qrA.accentColor} label={qrA.platformName} tilt={-5} />}
             {qrB && <QrMini accent={qrB.accentColor} label={qrB.platformName} tilt={5} />}
           </div>
-          <div className="absolute left-4 top-[58%] h-10 w-20 rounded-full" style={{ background: template.palette.accentSoft, opacity: 0.7 }} />
-          <div className="absolute right-4 top-[54%] h-8 w-8 rotate-12 rounded-[10px]" style={{ background: template.palette.surface, border: `2px solid ${template.palette.line}` }} />
+          <div className="absolute left-4 top-[60%] h-8 w-16 rounded-full" style={{ background: template.palette.accentSoft, opacity: 0.7 }} />
+          <div className="absolute right-4 top-[52%] h-7 w-7 rotate-12 rounded-[10px]" style={{ background: template.palette.surface, border: `2px solid ${template.palette.line}` }} />
         </>
       )}
 
       {template.layout === 'single-cute' && qrA && (
         <>
-          <div className="absolute left-1/2 top-[58%] -translate-x-1/2 -translate-y-1/2">
+          <div className="absolute left-1/2 top-[56%] -translate-x-1/2 -translate-y-1/2">
             <QrMini accent={qrA.accentColor} label={qrA.platformName} />
           </div>
-          <div className="absolute bottom-5 left-1/2 w-[70%] -translate-x-1/2 text-center text-[10px] font-semibold" style={{ color: template.palette.textSecondary }}>
+          <div className="absolute bottom-5 left-1/2 w-[74%] -translate-x-1/2 text-center text-[10px] font-semibold" style={{ color: template.palette.textSecondary }}>
             {template.copy.footer}
           </div>
         </>

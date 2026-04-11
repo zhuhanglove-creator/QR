@@ -60,25 +60,49 @@ const createQrStyle = (fgColor: string, bgColor: string, preset: QrStylePreset):
   ...stylePresetMap[preset],
 });
 
-const createCanvas = (backgroundColor: string, from: string, to: string, pattern: CanvasConfig['backgroundPattern']): CanvasConfig => ({
-  width: 1400,
-  height: 900,
-  sceneWidth: 1760,
-  sceneHeight: 1220,
-  cardX: 180,
-  cardY: 160,
-  backgroundColor,
-  padding: 60,
-  borderRadius: 50,
-  orientation: 'landscape',
-  backgroundPattern: pattern,
-  backgroundGradientFrom: from,
-  backgroundGradientTo: to,
-  backgroundImageOpacity: 0.35,
-  backgroundImageFit: 'cover',
-  overlayColor: '#ffffff',
-  overlayOpacity: 0.06,
-});
+const createCanvas = (
+  backgroundColor: string,
+  from: string,
+  to: string,
+  pattern: CanvasConfig['backgroundPattern'],
+  mode: TemplateMode,
+  layout: LayoutKind,
+): CanvasConfig => {
+  const portraitBase =
+    mode === 'single'
+      ? {
+          width: 1080,
+          height: 1350,
+          sceneWidth: 1242,
+          sceneHeight: 1660,
+          cardX: 81,
+          cardY: 120,
+          padding: 42,
+        }
+      : {
+          width: 1080,
+          height: layout === 'left-character-right-double' ? 1440 : 1350,
+          sceneWidth: 1242,
+          sceneHeight: layout === 'left-character-right-double' ? 1760 : 1660,
+          cardX: 81,
+          cardY: 120,
+          padding: 40,
+        };
+
+  return {
+    ...portraitBase,
+    backgroundColor,
+    borderRadius: 44,
+    orientation: 'portrait',
+    backgroundPattern: pattern,
+    backgroundGradientFrom: from,
+    backgroundGradientTo: to,
+    backgroundImageOpacity: 0.26,
+    backgroundImageFit: 'cover',
+    overlayColor: '#ffffff',
+    overlayOpacity: 0.04,
+  };
+};
 
 const createText = (
   kind: TextElement['kind'],
@@ -193,15 +217,15 @@ const buildDecorations = (palette: TemplatePalette, mode: TemplateMode, accentKi
   const colors = [palette.surfaceAlt, palette.accentSoft, palette.line];
   const extra = [palette.surface, palette.accentSoft, palette.line];
   const items = [
-    createDecoration('cloud', 84, 90, 190, 126, colors, 3, -6, 0.95),
-    createDecoration('star', 1210, 86, 96, 96, extra, 4, 10, 0.9),
-    createDecoration('heart', 1250, 714, 94, 84, colors, 4, 10, 0.9),
-    createDecoration(accentKind, 110, 694, 96, 96, extra, 4, -8, 0.95),
-    createDecoration('ribbon', 1160, 650, 124, 92, [palette.accentSoft, palette.surface, palette.line], 4, 10, 0.9),
+    createDecoration('cloud', 36, 42, 142, 96, colors, 3, -6, 0.9),
+    createDecoration('star', 924, 44, 58, 58, extra, 4, 10, 0.82),
+    createDecoration('heart', 946, mode === 'single' ? 1128 : 1168, 58, 52, colors, 4, 10, 0.82),
+    createDecoration(accentKind, 46, mode === 'single' ? 1100 : 1148, 62, 62, extra, 4, -8, 0.86),
+    createDecoration('ribbon', 882, mode === 'single' ? 1040 : 1088, 88, 64, [palette.accentSoft, palette.surface, palette.line], 4, 10, 0.82),
   ];
 
   if (mode === 'double') {
-    items.push(createDecoration('wing', 624, 152, 152, 118, [palette.surfaceAlt, palette.accentSoft, palette.line], 4, 0, 0.9));
+    items.push(createDecoration('wing', 454, 176, 108, 84, [palette.surfaceAlt, palette.accentSoft, palette.line], 4, 0, 0.8));
   }
 
   return items;
@@ -210,32 +234,32 @@ const buildDecorations = (palette: TemplatePalette, mode: TemplateMode, accentKi
 const buildTexts = (palette: TemplatePalette, copy: Template['copy'], layout: LayoutKind, mode: TemplateMode) => {
   if (layout === 'single-cute') {
     return [
-      createText('title', copy.title, 88, 82, 1224, 54, palette.textPrimary, 800, 'center'),
-      createText('subtitle', copy.subtitle, 140, 152, 1120, 24, palette.textSecondary, 500, 'center'),
-      createText('footer', copy.footer, 160, 782, 1080, 22, palette.textSecondary, 600, 'center'),
+      createText('title', copy.title, 86, 84, 908, 60, palette.textPrimary, 800, 'center'),
+      createText('subtitle', copy.subtitle, 124, 160, 832, 30, palette.textSecondary, 500, 'center'),
+      createText('footer', copy.footer, 120, 1186, 840, 24, palette.textSecondary, 600, 'center'),
     ];
   }
 
   if (layout === 'left-character-right-double') {
     return [
-      createText('title', copy.title, 520, 84, 720, 56, palette.textPrimary, 800, 'left'),
-      createText('subtitle', copy.subtitle, 520, 154, 720, 24, palette.textSecondary, 500, 'left'),
-      createText('footer', copy.footer, 540, 768, 700, 22, palette.textSecondary, 600, 'left'),
+      createText('title', copy.title, 110, 90, 860, 58, palette.textPrimary, 800, 'center'),
+      createText('subtitle', copy.subtitle, 128, 166, 824, 28, palette.textSecondary, 500, 'center'),
+      createText('footer', copy.footer, 120, 1280, 840, 24, palette.textSecondary, 600, 'center'),
     ];
   }
 
   if (mode === 'double') {
     return [
-      createText('title', copy.title, 110, 74, 1180, 56, palette.textPrimary, 800, 'center'),
-      createText('subtitle', copy.subtitle, 170, 148, 1060, 24, palette.textSecondary, 500, 'center'),
-      createText('footer', copy.footer, 220, 790, 960, 22, palette.textSecondary, 600, 'center'),
+      createText('title', copy.title, 100, 88, 880, 58, palette.textPrimary, 800, 'center'),
+      createText('subtitle', copy.subtitle, 124, 164, 832, 28, palette.textSecondary, 500, 'center'),
+      createText('footer', copy.footer, 126, 1190, 828, 24, palette.textSecondary, 600, 'center'),
     ];
   }
 
   return [
-    createText('title', copy.title, 100, 92, 1200, 56, palette.textPrimary, 800, 'center'),
-    createText('subtitle', copy.subtitle, 160, 168, 1080, 24, palette.textSecondary, 500, 'center'),
-    createText('footer', copy.footer, 170, 780, 1060, 22, palette.textSecondary, 600, 'center'),
+    createText('title', copy.title, 100, 92, 880, 58, palette.textPrimary, 800, 'center'),
+    createText('subtitle', copy.subtitle, 126, 170, 828, 28, palette.textSecondary, 500, 'center'),
+    createText('footer', copy.footer, 126, 1192, 828, 24, palette.textSecondary, 600, 'center'),
   ];
 };
 
@@ -248,9 +272,9 @@ const buildQrs = (palette: TemplatePalette, layout: LayoutKind, mode: TemplateMo
         title: '请扫码支持',
         description: '',
         badgeText: '单码',
-        x: 510,
-        y: 250,
-        size: 380,
+        x: 280,
+        y: 286,
+        size: 520,
         fgColor: palette.accent,
         bgColor: '#ffffff',
         frameTheme,
@@ -268,9 +292,9 @@ const buildQrs = (palette: TemplatePalette, layout: LayoutKind, mode: TemplateMo
         title: '微信',
         description: '',
         badgeText: 'WeChat',
-        x: 820,
-        y: 250,
-        size: 230,
+        x: 112,
+        y: 520,
+        size: 360,
         fgColor: '#1f9d55',
         bgColor: '#ffffff',
         frameTheme,
@@ -283,9 +307,9 @@ const buildQrs = (palette: TemplatePalette, layout: LayoutKind, mode: TemplateMo
         title: '支付宝',
         description: '',
         badgeText: 'Alipay',
-        x: 1086,
-        y: 250,
-        size: 230,
+        x: 608,
+        y: 520,
+        size: 360,
         fgColor: '#1677ff',
         bgColor: '#ffffff',
         frameTheme,
@@ -302,9 +326,9 @@ const buildQrs = (palette: TemplatePalette, layout: LayoutKind, mode: TemplateMo
       title: '微信',
       description: '',
       badgeText: 'WeChat',
-      x: 330,
-      y: 260,
-      size: 280,
+      x: 110,
+      y: 350,
+      size: 360,
       fgColor: '#1f9d55',
       bgColor: '#ffffff',
       frameTheme,
@@ -317,9 +341,9 @@ const buildQrs = (palette: TemplatePalette, layout: LayoutKind, mode: TemplateMo
       title: '支付宝',
       description: '',
       badgeText: 'Alipay',
-      x: 790,
-      y: 260,
-      size: 280,
+      x: 610,
+      y: 350,
+      size: 360,
       fgColor: '#1677ff',
       bgColor: '#ffffff',
       frameTheme,
@@ -345,7 +369,7 @@ const createTemplate = (input: {
   character?: CharacterElement['theme'];
   mockup: MockupConfig;
 }): Template => {
-  const canvas = createCanvas(input.palette.surface, input.palette.surfaceAlt, input.palette.accentSoft, input.pattern);
+  const canvas = createCanvas(input.palette.surface, input.palette.surfaceAlt, input.palette.accentSoft, input.pattern, input.mode, input.layout);
   const texts = buildTexts(input.palette, input.copy, input.layout, input.mode);
   const qrElements = buildQrs(input.palette, input.layout, input.mode, input.frameTheme);
   const decorations = buildDecorations(input.palette, input.mode, input.accentKind);
@@ -353,11 +377,11 @@ const createTemplate = (input: {
     input.character &&
     createCharacter(
       input.character,
-      input.layout === 'left-character-right-double' ? 60 : 68,
-      input.layout === 'left-character-right-double' ? 198 : 468,
-      input.layout === 'left-character-right-double' ? 420 : 260,
-      input.layout === 'left-character-right-double' ? 520 : 240,
-      input.layout === 'left-character-right-double' ? 'front' : 'behind',
+      input.layout === 'left-character-right-double' ? 366 : 760,
+      input.layout === 'left-character-right-double' ? 236 : 226,
+      input.layout === 'left-character-right-double' ? 348 : 182,
+      input.layout === 'left-character-right-double' ? 348 : 182,
+      'behind',
     );
 
   return {
@@ -365,7 +389,7 @@ const createTemplate = (input: {
     name: input.name,
     category: input.category,
     mode: input.mode,
-    orientation: 'landscape',
+    orientation: 'portrait',
     layout: input.layout,
     thumbnail: '',
     tags: input.tags,

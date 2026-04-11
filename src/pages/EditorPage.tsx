@@ -23,11 +23,11 @@ export const EditorPage = () => {
   const [mobileTab, setMobileTab] = useState<MobileTab>('preview');
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#fff8fb_0%,#f6f7ff_38%,#eef8ff_100%)]">
-      <div className="mx-auto grid max-w-[1720px] gap-4 p-3 pb-24 sm:p-4 sm:pb-28 lg:p-6 xl:pb-6">
+    <main className="min-h-screen overflow-x-hidden bg-[linear-gradient(180deg,#fff8fb_0%,#f6f7ff_38%,#eef8ff_100%)]">
+      <div className="mx-auto grid max-w-[1720px] gap-3 p-3 pb-24 sm:gap-4 sm:p-4 sm:pb-28 lg:p-6 xl:pb-6">
         <TopBar stageRef={stageRef} />
 
-        <div className="grid gap-4 xl:hidden">
+        <div className="grid gap-3 xl:hidden">
           {mobileTab === 'preview' && <CanvasWorkspace stageRef={stageRef} compact />}
           {mobileTab === 'templates' && <TemplateLibraryPanel mobile />}
           {mobileTab === 'assets' && <AssetLibraryPanel mobile />}

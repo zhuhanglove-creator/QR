@@ -75,7 +75,7 @@ export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) =
               </div>
               <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">当前大预览</span>
             </div>
-            <TemplatePreviewCard template={activeTemplate} className="aspect-[1.55/1] min-h-[220px] sm:min-h-[240px]" />
+            <TemplatePreviewCard template={activeTemplate} className="min-h-[260px] sm:min-h-[320px]" />
             <button
               type="button"
               className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm text-white transition hover:bg-slate-800"
@@ -113,7 +113,7 @@ export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) =
               className={`rounded-[30px] border bg-white/90 p-3 transition ${activeTemplateId === template.id ? 'border-slate-900 shadow-soft' : 'border-slate-200'}`}
             >
               <button type="button" className="block w-full text-left" onClick={() => applyTemplate(template.id)}>
-                <TemplatePreviewCard template={template} className="aspect-[1.55/1] min-h-[190px] sm:min-h-[210px]" />
+                <TemplatePreviewCard template={template} className="min-h-[240px] sm:min-h-[280px]" />
               </button>
 
               <div className="mt-3 flex items-start justify-between gap-3">
