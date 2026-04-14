@@ -38,16 +38,19 @@ export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) =
   );
 
   const activeTemplate = filtered.find((item) => item.id === activeTemplateId) ?? filtered[0];
+  const panelClassName = mobile ? 'max-h-[calc(100dvh-220px)] overflow-hidden' : 'max-h-[calc(100vh-170px)] overflow-hidden';
 
   return (
-    <Panel title="1. 先选模板" className={mobile ? '' : 'max-h-[calc(100vh-170px)] overflow-hidden'}>
-      <div className="grid h-full gap-4">
+    <Panel title="1. 先选模板" className={panelClassName}>
+      <div className="flex h-full min-h-0 flex-col gap-4">
         <div className="rounded-[28px] border border-rose-100 bg-[linear-gradient(135deg,#fff7fb,#eef7ff)] p-4">
           <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-800">
             <Sparkles className="h-4 w-4 text-rose-500" />
-            先看整张模板，再决定套用
+            先看整张模板，再决定要不要套用
           </div>
-          <p className="text-sm leading-6 text-slate-600">默认优先展示横版双码卡。手机上可以直接看大缩略图，不用切来切去。</p>
+          <p className="text-sm leading-6 text-slate-600">
+            手机上这里会直接显示大预览和缩略图，选中后马上生效，不用再切到预览页等重新适配。
+          </p>
           <div className="mt-4 flex gap-2">
             <button
               type="button"
@@ -81,7 +84,7 @@ export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) =
               className="mt-3 w-full rounded-full bg-slate-900 px-4 py-2.5 text-sm text-white transition hover:bg-slate-800"
               onClick={() => applyTemplate(activeTemplate.id)}
             >
-              使用当前大预览模板
+              使用当前预览模板
             </button>
           </div>
         )}
@@ -106,7 +109,7 @@ export const TemplateLibraryPanel = ({ mobile = false }: { mobile?: boolean }) =
           ))}
         </div>
 
-        <div className={`grid gap-4 pr-1 ${mobile ? '' : 'overflow-y-auto'}`}>
+        <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-1">
           {filtered.map((template) => (
             <article
               key={template.id}

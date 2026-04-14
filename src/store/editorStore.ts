@@ -3,13 +3,12 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { defaultTemplates } from '../data/templates/presets';
 import { processQrAsset } from '../modules/qr-processing';
-import { validateRenderedQr } from '../modules/qr-processing/validator';
 import { renderQrDataUrl } from '../modules/qr-processing/renderer';
+import { validateRenderedQr } from '../modules/qr-processing/validator';
 import { applyTemplateToProject, cloneTemplate } from '../modules/template-engine';
 import type {
   AssetLibraryItem,
   BackgroundPattern,
-  CharacterElement,
   EditorMode,
   EditorState,
   ExportConfig,
@@ -18,7 +17,9 @@ import type {
   QrElement,
   QrProcessingResult,
   Template,
+  TemplateCategory,
   TemplateMode,
+  TemplateOrientation,
   TextElement,
 } from '../types';
 import { loadEditorSnapshot, saveEditorSnapshot } from '../utils/storage';
@@ -64,9 +65,100 @@ const canHydrateSnapshot = (snapshot: Partial<EditorState> | null): snapshot is 
 const hydratedSnapshot = canHydrateSnapshot(rawSnapshot) ? rawSnapshot : null;
 
 const providerLabels: Record<'wechat' | 'alipay' | 'generic', string> = {
-  wechat: '微信支付',
+  wechat: '微信收款',
   alipay: '支付宝',
   generic: '收款码',
+};
+
+const templateCategories = new Set<TemplateCategory>(['anime', 'cute', 'commission', 'gaming', 'single']);
+const templateModes = new Set<TemplateMode>(['single', 'double']);
+const templateOrientations = new Set<TemplateOrientation>(['landscape', 'portrait']);
+
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null;
+
+const pickString = (value: unknown, fallback = '') => (typeof value === 'string' ? value : fallback);
+
+const pickArray = <T>(value: unknown, fallback: T[] = []) => (Array.isArray(value) ? (value as T[]) : fallback);
+
+const isTemplatePayload = (value: unknown): value is Record<string, unknown> => {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isRecord(value.canvas) &&
+    isRecord(value.mockup) &&
+    Array.isArray(value.textElements) &&
+    Array.isArray(value.qrElements) &&
+    Array.isArray(value.decorations) &&
+    isRecord(value.defaultExportConfig)
+  );
+};
+
+const extractTemplateSource = (value: unknown): unknown => {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  if (isRecord(value.template)) {
+    return value.template;
+  }
+
+  if (Array.isArray(value.templates) && value.templates.length > 0) {
+    const activeId = typeof value.activeTemplateId === 'string' ? value.activeTemplateId : undefined;
+    const activeTemplate = activeId
+      ? value.templates.find((item) => isRecord(item) && item.id === activeId)
+      : undefined;
+
+    return activeTemplate ?? value.templates[0];
+  }
+
+  return value;
+};
+
+const normalizeImportedTemplate = (input: unknown): Template | null => {
+  const source = extractTemplateSource(input);
+  if (!isTemplatePayload(source)) {
+    return null;
+  }
+
+  const now = new Date().toISOString();
+  const fallback = cloneTemplate(initialTemplate);
+  const templateId = `${pickString(source.id, 'imported-template')}-${nanoid(8)}`;
+
+  return {
+    ...fallback,
+    ...source,
+    id: templateId,
+    name: pickString(source.name, fallback.name),
+    category: templateCategories.has(source.category as TemplateCategory) ? (source.category as TemplateCategory) : fallback.category,
+    mode: templateModes.has(source.mode as TemplateMode) ? (source.mode as TemplateMode) : fallback.mode,
+    orientation: templateOrientations.has(source.orientation as TemplateOrientation) ? (source.orientation as TemplateOrientation) : fallback.orientation,
+    thumbnail: pickString(source.thumbnail, fallback.thumbnail),
+    tags: pickArray<string>(source.tags, fallback.tags).filter((tag): tag is string => typeof tag === 'string'),
+    scene: typeof source.scene === 'string' ? source.scene : undefined,
+    palette: {
+      ...fallback.palette,
+      ...(isRecord(source.palette) ? source.palette : {}),
+    },
+    copy: {
+      ...fallback.copy,
+      ...(isRecord(source.copy) ? source.copy : {}),
+    },
+    canvas: cloneTemplate(source.canvas) as Template['canvas'],
+    textElements: cloneTemplate(source.textElements) as Template['textElements'],
+    imageElements: cloneTemplate(pickArray(source.imageElements, fallback.imageElements)) as Template['imageElements'],
+    qrElements: cloneTemplate(source.qrElements) as Template['qrElements'],
+    decorations: cloneTemplate(source.decorations) as Template['decorations'],
+    character: source.character && isRecord(source.character) ? (cloneTemplate(source.character) as unknown as Template['character']) : undefined,
+    mockup: cloneTemplate(source.mockup) as Template['mockup'],
+    defaultExportConfig: cloneTemplate(source.defaultExportConfig) as Template['defaultExportConfig'],
+    editableSchema: cloneTemplate(pickArray(source.editableSchema, fallback.editableSchema)) as Template['editableSchema'],
+    favorite: false,
+    createdAt: now,
+    updatedAt: now,
+    version: pickString(source.version, fallback.version),
+  };
 };
 
 const buildInitialState = (): EditorState => ({
@@ -247,7 +339,12 @@ export const useEditorStore = create<EditorState & EditorActions>()(
     importTemplateJson: (json) =>
       set((state) => {
         try {
-          const template = JSON.parse(json) as Template;
+          const parsed = JSON.parse(json) as unknown;
+          const template = normalizeImportedTemplate(parsed);
+          if (!template) {
+            throw new Error('Unsupported template format');
+          }
+
           state.templates.unshift(template);
           applyTemplateData(state, template);
         } catch (error) {

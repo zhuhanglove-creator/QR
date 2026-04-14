@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Group, Image as KonvaImage, Layer, Rect, Stage, Text } from 'react-konva';
 import type Konva from 'konva';
 import { useImageElement } from '../../hooks/useImageElement';
@@ -125,7 +125,7 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const element = viewportRef.current;
     if (!element) {
       return;
@@ -182,11 +182,15 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
       <div
         ref={viewportRef}
         className="overflow-hidden rounded-[28px] p-2 sm:rounded-[30px] sm:p-4"
-        style={{ background: sceneWrapperStyle, minHeight: compact ? compactViewportHeight : 'calc(100vh - 240px)' }}
+        style={{
+          background: sceneWrapperStyle,
+          minHeight: compact ? compactViewportHeight : 'calc(100vh - 240px)',
+          touchAction: 'pan-y',
+        }}
       >
         <div
           className={`flex h-full items-center justify-center overflow-hidden ${compact ? 'min-h-[220px]' : 'min-h-[520px]'}`}
-          style={compact ? { minHeight: 'calc(100dvh - 316px)' } : undefined}
+          style={compact ? { minHeight: 'calc(100dvh - 316px)', touchAction: 'pan-y' } : { touchAction: 'pan-y' }}
         >
           <div style={{ width: scaledWidth, height: scaledHeight }}>
             <Stage
@@ -196,6 +200,7 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
               scaleX={stageScale}
               scaleY={stageScale}
               className="rounded-[28px] sm:rounded-[32px]"
+              style={{ touchAction: 'pan-y' }}
             >
               <Layer id="scene-layer">
                 <Rect width={canvas.sceneWidth} height={canvas.sceneHeight} fill="rgba(255,255,255,0)" />

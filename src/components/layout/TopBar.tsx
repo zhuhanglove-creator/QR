@@ -37,9 +37,11 @@ export const TopBar = ({ stageRef }: TopBarProps) => {
 
   const handleImportTemplate = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = '';
     if (!file) {
       return;
     }
+
     const text = await file.text();
     importTemplateJson(text);
   };
@@ -177,12 +179,12 @@ export const TopBar = ({ stageRef }: TopBarProps) => {
               </button>
               <label className="cursor-pointer rounded-2xl bg-white px-3 py-2 text-center text-sm text-slate-700">
                 <FileJson className="mr-1 inline-block h-4 w-4" />
-                导入模板
-                <input type="file" accept=".json" className="hidden" onChange={handleImportTemplate} />
+                导入作品
+                <input type="file" accept=".json,application/json" className="hidden" onChange={handleImportTemplate} />
               </label>
               <button type="button" className="rounded-2xl bg-white px-3 py-2 text-sm text-slate-700" onClick={handleExportTemplate}>
                 <FileJson className="mr-1 inline-block h-4 w-4" />
-                导出模板
+                导出作品
               </button>
               <button type="button" className="col-span-2 rounded-2xl bg-white px-3 py-2 text-sm text-slate-700" onClick={resetProject}>
                 <RefreshCcw className="mr-1 inline-block h-4 w-4" />
@@ -234,13 +236,13 @@ export const TopBar = ({ stageRef }: TopBarProps) => {
 
             <label className="cursor-pointer whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50">
               <FileJson className="mr-1 inline-block h-4 w-4" />
-              导入模板
-              <input type="file" accept=".json" className="hidden" onChange={handleImportTemplate} />
+              导入作品 JSON
+              <input type="file" accept=".json,application/json" className="hidden" onChange={handleImportTemplate} />
             </label>
 
             <button type="button" className="whitespace-nowrap rounded-full border border-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-50" onClick={handleExportTemplate}>
               <FileJson className="mr-1 inline-block h-4 w-4" />
-              导出模板 JSON
+              导出作品 JSON
             </button>
 
             <button type="button" className="whitespace-nowrap rounded-full bg-slate-900 px-4 py-2 text-sm text-white transition hover:bg-slate-800" onClick={handleExportCard}>
