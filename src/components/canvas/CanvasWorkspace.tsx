@@ -123,7 +123,10 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
   const decorationScale = useEditorStore((state) => state.decorationScale);
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
-  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [viewportSize, setViewportSize] = useState(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0,
+  }));
 
   useLayoutEffect(() => {
     const element = viewportRef.current;
@@ -162,10 +165,15 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
       ? sceneBackground(mockup.scene, mockup.sceneColors)
       : 'linear-gradient(135deg, #fff8fb, #eef5ff 55%, #f9f2ff)';
 
-  const compactViewportHeight = 'calc(100dvh - 248px)';
+  const compactViewportHeight = 'calc(100svh - 248px)';
   const availableWidth = Math.max(viewportSize.width - 20, 280);
   const availableHeight = Math.max(viewportSize.height - 20, compact ? 220 : 320);
-  const stageScale = viewportSize.width === 0 || viewportSize.height === 0 ? 1 : Math.min(availableWidth / canvas.sceneWidth, availableHeight / canvas.sceneHeight, 1);
+  const stageScale =
+    viewportSize.width === 0 || viewportSize.height === 0
+      ? 1
+      : compact
+        ? Math.min(availableWidth / canvas.sceneWidth, 1)
+        : Math.min(availableWidth / canvas.sceneWidth, availableHeight / canvas.sceneHeight, 1);
   const scaledWidth = canvas.sceneWidth * stageScale;
   const scaledHeight = canvas.sceneHeight * stageScale;
 
@@ -181,7 +189,7 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
 
       <div
         ref={viewportRef}
-        className="overflow-hidden rounded-[28px] p-2 sm:rounded-[30px] sm:p-4"
+        className={`rounded-[28px] p-2 sm:rounded-[30px] sm:p-4 ${compact ? 'overflow-y-auto overscroll-contain' : 'overflow-hidden'}`}
         style={{
           background: sceneWrapperStyle,
           minHeight: compact ? compactViewportHeight : 'calc(100vh - 240px)',
@@ -190,7 +198,7 @@ export const CanvasWorkspace = ({ stageRef, compact = false }: CanvasWorkspacePr
       >
         <div
           className={`flex h-full items-center justify-center overflow-hidden ${compact ? 'min-h-[220px]' : 'min-h-[520px]'}`}
-          style={compact ? { minHeight: 'calc(100dvh - 316px)', touchAction: 'pan-y' } : { touchAction: 'pan-y' }}
+          style={compact ? { minHeight: 'calc(100svh - 316px)', touchAction: 'pan-y' } : { touchAction: 'pan-y' }}
         >
           <div style={{ width: scaledWidth, height: scaledHeight }}>
             <Stage
